@@ -1,9 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:time_tracker_flutter_course/app/home_page.dart';
 import 'package:time_tracker_flutter_course/app/sign_in/sign_in_page.dart';
+import 'package:time_tracker_flutter_course/services/auth.dart';
 
 class LandingPage extends StatefulWidget {
-  const LandingPage({Key? key}) : super(key: key);
+  final AuthBase auth;
+
+  const LandingPage({Key? key, required this.auth}) : super(key: key);
 
   @override
   _LandingPageState createState() => _LandingPageState();
@@ -12,19 +16,29 @@ class LandingPage extends StatefulWidget {
 class _LandingPageState extends State<LandingPage> {
   User? _user;
 
+  @override
+  void initState() {
+    super.initState();
+    _updateUser(widget.auth.currentUser);
+  }
+
   void _updateUser(User? user) {
-    print('User id: ${user!.uid}');
+    setState(() {
+      _user = user;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     if (_user == null) {
       return SignInPage(
-        onSignIn: (user) {
-          _updateUser(user);
-        },
+        auth: widget.auth,
+        onSignIn: _updateUser,
       );
     }
-    return Container();
+    return HomePage(
+      auth: widget.auth,
+      onSignOut: () => _updateUser(null),
+    );
   }
 }
